@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../utils/theme.dart';
+import '../utils/animations.dart';
 import 'home_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -48,7 +49,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     if (success && mounted) {
       Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
+        SmoothPageRoute(page: const HomeScreen()),
         (route) => false,
       );
     } else if (mounted) {

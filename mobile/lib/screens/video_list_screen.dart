@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/video_provider.dart';
 import '../widgets/widgets.dart';
 import '../utils/theme.dart';
+import '../utils/animations.dart';
 import 'video_player_screen.dart';
 
 class VideoListScreen extends StatefulWidget {
@@ -174,17 +175,20 @@ class _VideoListScreenState extends State<VideoListScreen> {
             }
 
             final video = videoProvider.videos[index];
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: VideoCard(
-                video: video,
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => VideoPlayerScreen(video: video),
-                    ),
-                  );
-                },
+            return StaggeredFadeIn(
+              index: index,
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: VideoCard(
+                  video: video,
+                  onTap: () {
+                    Navigator.of(context).push(
+                      SmoothPageRoute(
+                        page: VideoPlayerScreen(video: video),
+                      ),
+                    );
+                  },
+                ),
               ),
             );
           },

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../utils/theme.dart';
+import '../utils/animations.dart';
 import 'login_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -199,7 +200,7 @@ class ProfileScreen extends StatelessWidget {
               await context.read<AuthProvider>().logout();
               if (context.mounted) {
                 Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (_) => const LoginScreen()),
+                  SmoothPageRoute(page: const LoginScreen()),
                   (route) => false,
                 );
               }

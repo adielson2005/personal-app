@@ -3,7 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../models/exercise_video.dart';
 import '../utils/theme.dart';
 
-class VideoCard extends StatelessWidget {
+class VideoCard extends StatefulWidget {
   final ExerciseVideo video;
   final VoidCallback? onTap;
   final VoidCallback? onEdit;
@@ -20,166 +20,230 @@ class VideoCard extends StatelessWidget {
   });
 
   @override
+  State<VideoCard> createState() => _VideoCardState();
+}
+
+class _VideoCardState extends State<VideoCard>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+  bool _isHovered = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 120),
+      vsync: this,
+    );
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.98).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.cardBackground,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(16),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(16),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Thumbnail compacto
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: SizedBox(
-                    width: 120,
-                    height: 80,
-                    child: Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        _buildThumbnail(),
-                        // Play icon minimalista
-                        Center(
-                          child: Container(
-                            width: 32,
-                            height: 32,
-                            decoration: BoxDecoration(
-                              color: AppColors.background.withValues(alpha: 0.8),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.play_arrow_rounded,
-                              color: AppColors.textPrimary,
-                              size: 18,
-                            ),
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: GestureDetector(
+        onTapDown: (_) => _controller.forward(),
+        onTapUp: (_) => _controller.reverse(),
+        onTapCancel: () => _controller.reverse(),
+        onTap: widget.onTap,
+        child: AnimatedBuilder(
+          animation: _scaleAnimation,
+          builder: (context, child) {
+            return Transform.scale(
+              scale: _scaleAnimation.value,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeOut,
+                decoration: BoxDecoration(
+                  color: _isHovered
+                      ? AppColors.cardBackground.withValues(alpha: 0.9)
+                      : AppColors.cardBackground,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: _isHovered
+                      ? [
+                          BoxShadow(
+                            color: Colors.white.withValues(alpha: 0.03),
+                            blurRadius: 20,
+                            offset: const Offset(0, 4),
                           ),
-                        ),
-                        // Duration
-                        if (video.formattedDuration != null)
-                          Positioned(
-                            bottom: 6,
-                            right: 6,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 6,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppColors.background.withValues(alpha: 0.9),
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Text(
-                                video.formattedDuration!,
-                                style: const TextStyle(
-                                  color: AppColors.textPrimary,
-                                  fontSize: 9,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
+                        ]
+                      : null,
                 ),
-                const SizedBox(width: 16),
-                // Content
-                Expanded(
-                  child: Column(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Tag minimalista
-                      Text(
-                        video.muscleGroupDisplayName.toUpperCase(),
-                        style: TextStyle(
-                          fontSize: 9,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textMuted.withValues(alpha: 0.8),
-                          letterSpacing: 1.2,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      // Title
-                      Text(
-                        video.title,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: AppColors.textPrimary,
-                          height: 1.3,
-                          letterSpacing: -0.2,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      if (video.description != null &&
-                          video.description!.isNotEmpty) ...[
-                        const SizedBox(height: 4),
-                        Text(
-                          video.description!,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: AppColors.textSecondary,
-                            height: 1.3,
+                      // Thumbnail compacto
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: SizedBox(
+                          width: 120,
+                          height: 80,
+                          child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              _buildThumbnail(),
+                              // Play icon minimalista com animação
+                              Center(
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 200),
+                                  width: _isHovered ? 36 : 32,
+                                  height: _isHovered ? 36 : 32,
+                                  decoration: BoxDecoration(
+                                    color: AppColors.background.withValues(
+                                        alpha: _isHovered ? 0.95 : 0.8),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.play_arrow_rounded,
+                                    color: AppColors.textPrimary,
+                                    size: 18,
+                                  ),
+                                ),
+                              ),
+                              // Duration
+                              if (widget.video.formattedDuration != null)
+                                Positioned(
+                                  bottom: 6,
+                                  right: 6,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 6,
+                                      vertical: 2,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.background
+                                          .withValues(alpha: 0.9),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Text(
+                                      widget.video.formattedDuration!,
+                                      style: const TextStyle(
+                                        color: AppColors.textPrimary,
+                                        fontSize: 9,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                            ],
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
                         ),
-                      ],
-                      // Actions minimalistas
-                      if (showActions) ...[
-                        const SizedBox(height: 12),
-                        Row(
+                      ),
+                      const SizedBox(width: 16),
+                      // Content
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            if (onEdit != null)
-                              _MinimalActionButton(
-                                icon: Icons.edit_outlined,
-                                onTap: onEdit!,
+                            // Tag minimalista
+                            Text(
+                              widget.video.muscleGroupDisplayName.toUpperCase(),
+                              style: TextStyle(
+                                fontSize: 9,
+                                fontWeight: FontWeight.w600,
+                                color:
+                                    AppColors.textMuted.withValues(alpha: 0.8),
+                                letterSpacing: 1.2,
                               ),
-                            if (onEdit != null && onDelete != null)
-                              const SizedBox(width: 8),
-                            if (onDelete != null)
-                              _MinimalActionButton(
-                                icon: Icons.delete_outline,
-                                onTap: onDelete!,
-                                isDestructive: true,
+                            ),
+                            const SizedBox(height: 6),
+                            // Title
+                            Text(
+                              widget.video.title,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: AppColors.textPrimary,
+                                height: 1.3,
+                                letterSpacing: -0.2,
                               ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            if (widget.video.description != null &&
+                                widget.video.description!.isNotEmpty) ...[
+                              const SizedBox(height: 4),
+                              Text(
+                                widget.video.description!,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: AppColors.textSecondary,
+                                  height: 1.3,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                            // Actions minimalistas
+                            if (widget.showActions) ...[
+                              const SizedBox(height: 12),
+                              Row(
+                                children: [
+                                  if (widget.onEdit != null)
+                                    _MinimalActionButton(
+                                      icon: Icons.edit_outlined,
+                                      onTap: widget.onEdit!,
+                                    ),
+                                  if (widget.onEdit != null &&
+                                      widget.onDelete != null)
+                                    const SizedBox(width: 8),
+                                  if (widget.onDelete != null)
+                                    _MinimalActionButton(
+                                      icon: Icons.delete_outline,
+                                      onTap: widget.onDelete!,
+                                      isDestructive: true,
+                                    ),
+                                ],
+                              ),
+                            ],
                           ],
                         ),
-                      ],
+                      ),
+                      // Arrow indicator com animação
+                      AnimatedPadding(
+                        duration: const Duration(milliseconds: 200),
+                        padding: EdgeInsets.only(
+                          top: 24,
+                          right: _isHovered ? 0 : 4,
+                        ),
+                        child: AnimatedOpacity(
+                          duration: const Duration(milliseconds: 200),
+                          opacity: _isHovered ? 1.0 : 0.5,
+                          child: const Icon(
+                            Icons.arrow_forward_ios,
+                            size: 14,
+                            color: AppColors.textMuted,
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
-                // Arrow indicator
-                const Padding(
-                  padding: EdgeInsets.only(top: 24),
-                  child: Icon(
-                    Icons.arrow_forward_ios,
-                    size: 14,
-                    color: AppColors.textMuted,
-                  ),
-                ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         ),
       ),
     );
   }
 
   Widget _buildThumbnail() {
-    if (video.thumbnailUrl != null && video.thumbnailUrl!.isNotEmpty) {
+    if (widget.video.thumbnailUrl != null && widget.video.thumbnailUrl!.isNotEmpty) {
       return CachedNetworkImage(
-        imageUrl: video.thumbnailUrl!,
+        imageUrl: widget.video.thumbnailUrl!,
         fit: BoxFit.cover,
         placeholder: (context, url) => _buildPlaceholder(),
         errorWidget: (context, url, error) => _buildPlaceholder(),

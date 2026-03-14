@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/providers.dart';
 import '../widgets/widgets.dart';
 import '../utils/theme.dart';
+import '../utils/animations.dart';
 import 'video_list_screen.dart';
 import 'video_player_screen.dart';
 import 'upload_video_screen.dart';
@@ -85,24 +86,36 @@ class _HomeScreenState extends State<HomeScreen> {
     return GestureDetector(
       onTap: () => setState(() => _currentIndex = index),
       behavior: HitTestBehavior.opaque,
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOut,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              isSelected ? activeIcon : icon,
-              color: isSelected ? AppColors.textPrimary : AppColors.textMuted,
-              size: 24,
+            AnimatedScale(
+              scale: isSelected ? 1.1 : 1.0,
+              duration: const Duration(milliseconds: 150),
+              curve: Curves.easeOut,
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 200),
+                child: Icon(
+                  isSelected ? activeIcon : icon,
+                  key: ValueKey(isSelected),
+                  color: isSelected ? AppColors.textPrimary : AppColors.textMuted,
+                  size: 24,
+                ),
+              ),
             ),
             const SizedBox(height: 4),
-            Text(
-              label,
+            AnimatedDefaultTextStyle(
+              duration: const Duration(milliseconds: 200),
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: isSelected ? FontWeight.w500 : FontWeight.w400,
                 color: isSelected ? AppColors.textPrimary : AppColors.textMuted,
               ),
+              child: Text(label),
             ),
           ],
         ),
@@ -169,17 +182,20 @@ class _HomeContent extends StatelessWidget {
                     (context, index) {
                       if (index >= 5) return null;
                       final video = videoProvider.videos[index];
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: VideoCard(
-                          video: video,
-                          onTap: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) => VideoPlayerScreen(video: video),
-                              ),
-                            );
-                          },
+                      return StaggeredFadeIn(
+                        index: index,
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: VideoCard(
+                            video: video,
+                            onTap: () {
+                              Navigator.of(context).push(
+                                SmoothPageRoute(
+                                  page: VideoPlayerScreen(video: video),
+                                ),
+                              );
+                            },
+                          ),
                         ),
                       );
                     },
@@ -235,7 +251,7 @@ class _HomeContent extends StatelessWidget {
               await authProvider.logout();
               if (context.mounted) {
                 Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (_) => const LoginScreen()),
+                  SmoothPageRoute(page: const LoginScreen()),
                   (route) => false,
                 );
               }
