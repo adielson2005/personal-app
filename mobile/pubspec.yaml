@@ -35,7 +35,7 @@ dependencies:
   chewie: ^1.7.4
 
   # File Picker
-  file_picker: ^6.1.1
+  file_picker: ^8.0.0
   image_picker: ^1.0.5
 
   # Utils
