@@ -23,8 +23,11 @@ connectDB().then(async () => {
 // CORS
 const allowedOrigins = (process.env.CORS_ORIGIN || '')
   .split(',')
-  .map((origin) => origin.trim())
+  .map((o) => o.trim().replace(/\/$/, ''))
   .filter(Boolean);
+
+console.log('[CORS] CORS_ORIGIN env:', process.env.CORS_ORIGIN);
+console.log('[CORS] allowedOrigins:', allowedOrigins);
 
 const corsOptions = {
   origin: (origin, callback) => {
@@ -34,9 +37,11 @@ const corsOptions = {
     // Sem whitelist definida, libera todos os origins
     if (allowedOrigins.length === 0) return callback(null, true);
 
-    if (allowedOrigins.includes(origin)) return callback(null, true);
+    const normalizedOrigin = origin.trim().replace(/\/$/, '');
+    if (allowedOrigins.includes(normalizedOrigin)) return callback(null, true);
 
-    return callback(new Error('Not allowed by CORS'));
+    console.warn('[CORS] Origin bloqueada:', origin);
+    return callback(null, false);
   },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
