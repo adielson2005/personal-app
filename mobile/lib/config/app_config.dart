@@ -1,9 +1,18 @@
 // Configurações da API
 class AppConfig {
-  // URL base da API - altere para o IP do seu servidor
-  // static const String baseUrl = 'http://10.0.2.2:3000/api'; // Para emulador Android
-  static const String baseUrl = 'http://localhost:3000/api'; // Para Chrome/Web e iOS simulator
-  // static const String baseUrl = 'http://SEU_IP:3000/api'; // Para dispositivo físico
+  // URL base da API.
+  // Em producao (Netlify), defina no build:
+  // --dart-define=API_BASE_URL=https://seu-backend.com/api
+  static const String _apiBaseUrlFromEnv = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: 'http://localhost:3000/api',
+  );
+
+  static String get baseUrl {
+    return _apiBaseUrlFromEnv.endsWith('/')
+        ? _apiBaseUrlFromEnv.substring(0, _apiBaseUrlFromEnv.length - 1)
+        : _apiBaseUrlFromEnv;
+  }
 
   // Timeouts
   static const int connectionTimeout = 30000;

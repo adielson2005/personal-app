@@ -1,0 +1,9 @@
+[build]
+  base = "mobile"
+  publish = "build/web"
+  command = "git clone https://github.com/flutter/flutter.git --depth 1 -b stable $HOME/flutter ; export PATH=\"$HOME/flutter/bin:$PATH\" ; flutter config --enable-web ; flutter pub get ; flutter build web --release --dart-define=API_BASE_URL=${API_BASE_URL:-http://localhost:3000/api}"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
