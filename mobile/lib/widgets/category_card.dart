@@ -2,7 +2,63 @@ import 'package:flutter/material.dart';
 import '../models/category.dart';
 import '../utils/theme.dart';
 
-// Ícones minimalistas geométricos para cada categoria
+// Widget de ícone de categoria: usa imagem personalizada em assets/icons/
+// Mapeie aqui o slug → nome exato do arquivo que você colocou na pasta.
+// Se o slug não estiver no mapa ou o arquivo não existir, usa o ícone vetorial como fallback.
+class CategoryIcon extends StatelessWidget {
+  final String slug;
+  final double size;
+
+  static const Map<String, String> _fileNames = {
+    'peito':   'Peito1.png',
+    'costas':  'Costa1.png',
+    'abdomen': 'Abdômen1.png',
+    'gluteo':  'Glúteo1.png',
+    'ombro':   'Ombro1.png',
+    // Adicione aqui os demais quando tiver os arquivos:
+    // 'perna':   'Perna1.png',
+    // 'biceps':  'Biceps1.png',
+    // 'triceps': 'Triceps1.png',
+    // 'cardio':  'Cardio1.png',
+    // 'outro':   'Outro1.png',
+  };
+
+  // Ajuste fino por categoria para imagens que tenham margem interna desigual.
+  // Se necessário, ajuste os valores para algo como Alignment(0.05, -0.08).
+  static const Map<String, Alignment> _customAlignments = {
+    'peito':   Alignment.center,
+    'costas':  Alignment.center,
+    'abdomen': Alignment(0.0, -0.4),
+    'gluteo':  Alignment.center,
+    'ombro':   Alignment.center,
+  };
+
+  const CategoryIcon({super.key, required this.slug, this.size = 28});
+
+  @override
+  Widget build(BuildContext context) {
+    final slugKey = slug.toLowerCase();
+    final fileName = _fileNames[slugKey];
+    final imageAlignment = _customAlignments[slugKey] ?? Alignment.center;
+    if (fileName == null) {
+      return MinimalIcon(slug: slug, size: size);
+    }
+    return ClipOval(
+      child: Image.asset(
+        'assets/icons/$fileName',
+        width: size,
+        height: size,
+        fit: BoxFit.cover,
+        alignment: imageAlignment,
+        errorBuilder: (context, error, stackTrace) {
+          return MinimalIcon(slug: slug, size: size);
+        },
+      ),
+    );
+  }
+}
+
+// Ícones minimalistas geométricos para cada categoria (fallback)
 class MinimalIcon extends StatelessWidget {
   final String slug;
   final double size;
@@ -183,7 +239,9 @@ class _CategoryCardState extends State<CategoryCard>
           builder: (context, child) {
             return Transform.scale(
               scale: _scaleAnimation.value,
-              child: AnimatedContainer(
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
                 curve: Curves.easeOut,
                 decoration: BoxDecoration(
@@ -202,38 +260,48 @@ class _CategoryCardState extends State<CategoryCard>
                       : null,
                 ),
                 child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  child: Row(
                     children: [
-                      MinimalIcon(slug: widget.category.slug, size: 28),
-                      const Spacer(),
-                      Text(
-                        widget.category.name,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textPrimary,
-                          letterSpacing: 0.3,
+                      CategoryIcon(slug: widget.category.slug, size: 52),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              widget.category.name,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textPrimary,
+                                letterSpacing: 0.1,
+                              ),
+                            ),
+                            if (widget.category.videoCount > 0) ...[
+                              const SizedBox(height: 2),
+                              Text(
+                                '${widget.category.videoCount} vídeo${widget.category.videoCount == 1 ? '' : 's'}',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: AppColors.textMuted,
+                                  fontWeight: FontWeight.w400,
+                                ),
+                              ),
+                            ],
+                          ],
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                       ),
-                      if (widget.category.videoCount > 0) ...[
-                        const SizedBox(height: 2),
-                        Text(
-                          '${widget.category.videoCount}',
-                          style: const TextStyle(
-                            fontSize: 10,
-                            color: AppColors.textMuted,
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
-                      ],
+                      const Icon(
+                        Icons.chevron_right,
+                        color: AppColors.textMuted,
+                        size: 20,
+                      ),
                     ],
                   ),
                 ),
               ),
+            ),
             );
           },
         ),

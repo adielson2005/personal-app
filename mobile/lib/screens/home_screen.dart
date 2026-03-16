@@ -302,29 +302,19 @@ class _HomeContent extends StatelessWidget {
             ),
           )
         else
-          SizedBox(
-            height: 100,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              itemCount: categoryProvider.categories.length,
-              itemBuilder: (context, index) {
-                final category = categoryProvider.categories[index];
-                return Padding(
-                  padding: const EdgeInsets.only(right: 12),
-                  child: SizedBox(
-                    width: 100,
-                    child: CategoryCard(
-                      category: category,
-                      onTap: () {
-                        context
-                            .read<VideoProvider>()
-                            .loadVideosByMuscleGroup(category.slug);
-                      },
-                    ),
-                  ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Column(
+              children: categoryProvider.categories.map((category) {
+                return CategoryCard(
+                  category: category,
+                  onTap: () {
+                    context
+                        .read<VideoProvider>()
+                        .loadVideosByMuscleGroup(category.slug);
+                  },
                 );
-              },
+              }).toList(),
             ),
           ),
       ],
